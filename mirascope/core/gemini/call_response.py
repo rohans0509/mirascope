@@ -3,8 +3,6 @@
 usage docs: learn/calls.md#handling-responses
 """
 
-from functools import cached_property
-
 from google.generativeai.protos import FunctionResponse
 from google.generativeai.types import (
     AsyncGenerateContentResponse,
@@ -15,7 +13,7 @@ from google.generativeai.types import (
 )
 from pydantic import computed_field
 
-from ..base import BaseCallResponse, transform_tool_outputs
+from ..base import BaseCallResponse
 from ._utils import calculate_cost
 from .call_params import GeminiCallParams
 from .dynamic_config import GeminiDynamicConfig
@@ -104,17 +102,17 @@ class GeminiCallResponse(
 
         google.generativeai does not have Usage, so we return None
         """
-        return None
+        return self.response.usage_metadata
 
     @property
     def input_tokens(self) -> None:
         """Returns the number of input tokens."""
-        return None
+        return self.response.usage_metadata.prompt_token_count
 
     @property
     def output_tokens(self) -> None:
         """Returns the number of output tokens."""
-        return None
+        return self.response.usage_metadata.candidates_token_count
 
     @property
     def cost(self) -> float | None:
@@ -122,13 +120,13 @@ class GeminiCallResponse(
         return calculate_cost(self.input_tokens, self.output_tokens, self.model)
 
     @computed_field
-    @cached_property
+    @property
     def message_param(self) -> ContentDict:
         """Returns the models's response as a message parameter."""
         return {"role": "model", "parts": self.response.parts}  # pyright: ignore [reportReturnType]
 
     @computed_field
-    @cached_property
+    @property
     def tools(self) -> list[GeminiTool] | None:
         """Returns the list of tools for the 0th candidate's 0th content part."""
         if self.tool_types is None:
@@ -145,7 +143,7 @@ class GeminiCallResponse(
         return extracted_tools
 
     @computed_field
-    @cached_property
+    @property
     def tool(self) -> GeminiTool | None:
         """Returns the 0th tool for the 0th candidate's 0th content part.
 
@@ -158,9 +156,8 @@ class GeminiCallResponse(
         return None
 
     @classmethod
-    @transform_tool_outputs
     def tool_message_params(
-        cls, tools_and_outputs: list[tuple[GeminiTool, str]]
+        cls, tools_and_outputs: list[tuple[GeminiTool, object]]
     ) -> list[ContentDict]:
         """Returns the tool message parameters for tool call results.
 
