@@ -164,3 +164,40 @@ class GroqCallResponse(
             )
             for tool, output in tools_and_outputs
         ]
+
+def calculate_cost(
+    input_tokens: int | None, output_tokens: int | None, model: str
+) -> float | None:
+    """Calculate the cost of the API call based on tokens used and model.
+    
+    Args:
+        input_tokens: Number of input tokens used
+        output_tokens: Number of output tokens used
+        model: Name of the model used
+    
+    Returns:
+        Cost in USD, or None if tokens are None
+    """
+    if input_tokens is None or output_tokens is None:
+        return None
+
+    # Pricing per million tokens (input, output)
+    MODEL_COSTS = {
+        "llama-3.2-1b-preview": (0.04, 0.04),
+        "llama-3.2-3b-preview": (0.06, 0.06),
+        "llama-3.3-70b-versatile": (0.59, 0.79),
+        "llama-3.1-8b-instant": (0.05, 0.08),
+        "llama3-70b-8192": (0.59, 0.79),
+        "llama3-8b-8192": (0.05, 0.08),
+        "mixtral-8x7b-32768": (0.24, 0.24),
+        "gemma2-9b-it": (0.20, 0.20),
+        "llama-guard-3-8b": (0.20, 0.20),
+        "llama-3.3-70b-specdec": (0.59, 0.99),
+    }
+
+    if model not in MODEL_COSTS:
+        return None
+
+    input_cost, output_cost = MODEL_COSTS[model]
+    total_cost = (input_tokens * input_cost + output_tokens * output_cost) / 1_000_000
+    return total_cost
