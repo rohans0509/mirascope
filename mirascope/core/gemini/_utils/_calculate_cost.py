@@ -10,6 +10,7 @@ def calculate_cost(
     
     Model Variants:
     - gemini-2.0-flash-exp: Next generation features, speed, and multimodal generation
+    - gemini-2.0-flash-lite: Lightweight version for faster responses
     - gemini-1.5-flash: Fast and versatile performance
     - gemini-1.5-pro: Complex reasoning tasks
     - gemini-1.5-flash-8b: High volume and lower intelligence tasks
@@ -18,6 +19,8 @@ def calculate_cost(
     
     Pricing (USD per 1M tokens):
     Model                Input               Output
+    gemini-2.0-flash    $0.10               $0.40
+    gemini-2.0-flash-lite $0.075            $0.30
     gemini-1.5-flash     $0.075              $0.30
     gemini-1.5-pro       $1.25               $5.00
     gemini-1.0-pro       $0.50               $1.50
@@ -25,6 +28,14 @@ def calculate_cost(
     """
     # Base pricing for each model family
     base_pricing = {
+        "gemini-2.0-flash": {
+            "prompt": 0.000_000_1,
+            "completion": 0.000_000_4,
+        },
+        "gemini-2.0-flash-lite": {
+            "prompt": 0.000_000_075,
+            "completion": 0.000_000_3,
+        },
         "gemini-1.5-flash": {
             "prompt": 0.000_000_075,
             "completion": 0.000_000_3,
